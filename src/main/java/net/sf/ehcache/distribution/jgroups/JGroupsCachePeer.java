@@ -209,8 +209,10 @@ public class JGroupsCachePeer implements CachePeer {
         final Message msg = new Message(dest, null, data);
 
         //
-        // If not asynchronous, set RSVP flag in order to wait for acknowledge, this depends on the RSVP protocol to be active in the stack
-        // and properly positionned above the GMS protocol and under the UNICAST one in order to receive view change events from the GMS protocol
+        // If not asynchronous, set RSVP flag in order to wait for acknowledge,
+        // this depends on the RSVP protocol to be active in the stack
+        // and properly positionned above the GMS protocol and under the UNICAST
+        // one in order to receive view change events from the GMS protocol
         //
         // -- Cedric Vidal (cedric at vidal dot biz) 28/09/2012
         //
