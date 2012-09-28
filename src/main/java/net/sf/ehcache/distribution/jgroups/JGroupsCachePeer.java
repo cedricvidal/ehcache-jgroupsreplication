@@ -21,6 +21,7 @@ import net.sf.ehcache.distribution.CachePeer;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.Message;
+import org.jgroups.Message.Flag;
 import org.jgroups.View;
 import org.jgroups.util.Util;
 import org.slf4j.Logger;
@@ -161,7 +162,7 @@ public class JGroupsCachePeer implements CachePeer {
         }
 
         LOG.debug("Sending {} JGroupEventMessages synchronously.", synchronousEventMessages.size());
-        this.sendData(dest, synchronousEventMessages);
+        this.sendData(dest, synchronousEventMessages, false);
     }
 
     private Queue<JGroupEventMessage> getMessageQueue(long asyncTime) {
@@ -186,7 +187,7 @@ public class JGroupsCachePeer implements CachePeer {
      * Sends a serializable object to the specified address. If no address is specified it is sent to the
      * entire group.
      */
-    private void sendData(Address dest, List<? extends Serializable> dataList) {
+    private void sendData(Address dest, List<? extends Serializable> dataList, boolean asynchronous) {
         //Remove the list wrapper if only a single event is being sent
         final Serializable toSend;
         if (dataList.size() == 1) {
@@ -206,6 +207,17 @@ public class JGroupsCachePeer implements CachePeer {
         
         //Send it off to the group
         final Message msg = new Message(dest, null, data);
+
+        //
+        // If not asynchronous, set RSVP flag in order to wait for acknowledge, this depends on the RSVP protocol to be active in the stack
+        // and properly positionned above the GMS protocol and under the UNICAST one in order to receive view change events from the GMS protocol
+        //
+        // -- Cedric Vidal (cedric at vidal dot biz) 28/09/2012
+        //
+        if (!asynchronous) {
+            msg.setFlag(Flag.RSVP);
+        }
+
         try {
             this.channel.send(msg);
         } catch (IllegalStateException e) {
@@ -241,7 +253,7 @@ public class JGroupsCachePeer implements CachePeer {
             }
 
             LOG.debug("Sending {} JGroupEventMessages from the asynchronous queue.", events.size());
-            this.sendData(null, events);
+            this.sendData(null, events, true);
         }
     }
 
