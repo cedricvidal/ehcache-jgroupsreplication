@@ -131,4 +131,4 @@ This simple patch just modifies the `JGroupsCachePeer` so that it sets the RSVP 
 Regards,
 
 Cedric Vidal
-http://blog.proxiad.com
+http://vidal.biz
